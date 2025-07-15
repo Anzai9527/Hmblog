@@ -36,7 +36,7 @@ SITE_URL="http://$(hostname -I | awk '{print $1}')"
 
 # 变量
 GIT_REPO="https://github.com/Anzai9527/Hmblog.git"
-WEB_ROOT="/var/www/hmblog"
+WEB_ROOT="/hmblog"
 
 # 安装git
 install_git() {
