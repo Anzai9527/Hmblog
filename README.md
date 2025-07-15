@@ -23,6 +23,100 @@ HM博客系统是一个基于PHP开发的现代化博客平台，采用MVC架构
 - **UI框架**: Bootstrap 5.2.3
 - **图标库**: Font Awesome 6.4.0
 - **数据库操作**: PDO (PHP Data Objects)
+  
+
+### 安装教程## 宝塔面板安装教程
+
+如果你使用宝塔面板（BT Panel）来部署本博客系统，可以按照以下步骤进行：
+
+### 1. 环境准备
+- 登录宝塔面板，确保已安装以下组件：
+  - Nginx
+  - MySQL 5.7 及以上
+  - PHP 7.4 及以上
+- 在“软件商店”中安装并启用 `PDO`、`PDO_MySQL`、`fileinfo`、`mbstring`、`json` 等PHP扩展。
+
+### 2. 创建站点和数据库
+- 在“网站”菜单点击“添加站点”，填写你的域名或IP。
+- 勾选“创建数据库”，设置数据库名、用户名和密码，记下这些信息，后续安装时会用到。
+
+### 3. 配置PHP扩展
+- 进入“软件商店”->“PHP设置”，确保已安装并启用：
+  - PDO
+  - PDO_MySQL
+  - fileinfo
+  - mbstring
+  - json
+- 可根据需要调整 `upload_max_filesize`、`post_max_size`、`max_execution_time` 等参数。
+
+### 4. 上传部署项目
+- 使用宝塔的“文件”功能或FTP工具，将本项目所有文件上传到站点根目录（如 `/www/wwwroot/yourdomain/`）。
+- 检查 `uploads/`、`assets/uploads/`、`content/` 等目录权限，确保可写（755或777，视服务器安全策略而定）。
+
+### 5. 设置伪静态规则
+- 在“网站”->“设置”->“伪静态”中，选择“Nginx”，粘贴如下规则：
+
+```
+# Nginx 伪静态规则配置
+# 适用于 hmjisu.com 博客系统
+
+# 文章详情页：post.php?id=18 -> post/18.html
+rewrite ^/post/([0-9]+)\.html$ /post.php?id=$1 last;
+
+# 标签搜索页：index.php?view=tags -> index/tags.html
+rewrite ^/index/tags\.html$ /index.php?view=tags last;
+
+# 归档页：index.php?archive=2025+%E5%B9%B4+07+%E6%9C%88 -> index/archive/2025+%E5%B9%B4+07+%E6%9C%88.html
+rewrite ^/index/archive/(.+?)\.html$ /index.php?archive=$1 last;
+
+# 标签页：index.php?tag=123 -> index/tag/123.html
+rewrite ^/index/tag/(.+?)\.html$ /index.php?tag=$1 last;
+
+# 分类页：index.php?category=分类名 -> index/category/分类名.html
+rewrite ^/index/category/(.+?)\.html$ /index.php?category=$1 last;
+
+# 首页保持原样
+rewrite ^/$ /index.php last;
+
+# 其他PHP文件保持原样
+location ~ \.php$ {
+    try_files $uri =404;
+    fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; # 根据您的PHP-FPM配置调整
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+}
+
+# 静态文件缓存
+location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+
+# 安全设置
+location ~ /\. {
+    deny all;
+}
+
+location ~ /(config|includes|admin)/ {
+    deny all;
+} 
+```
+
+### 6. 安装与初始化
+- 在浏览器访问 `http://你的域名/install.php`，根据提示填写数据库信息和网站信息，完成安装。
+- 安装完成后，系统会自动生成 `includes/installed.lock` 文件。
+- 为安全起见，建议删除 `install.php` 文件。
+
+### 7. 常见问题与建议
+- **数据库连接失败**：检查数据库信息是否正确，数据库是否允许本地连接。
+- **上传失败或权限问题**：检查上传目录权限，必要时设置为 755 或 777。
+- **伪静态不生效**：确认已正确设置伪静态规则，并重载Nginx/Apache配置。
+- **PHP扩展缺失**：在宝塔“软件商店”中安装缺失的扩展。
+- **安全建议**：定期备份数据库和站点文件，及时更新宝塔和各组件。
+
+如遇到其他问题，可参考宝塔官方文档或在社区发帖求助。
+
 
 ### 目录结构
 
