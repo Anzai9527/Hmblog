@@ -57,7 +57,7 @@ deploy_code() {
     git pull
     cd -
   fi
-  cd "$WEB_ROOT/www"
+  # 不要cd到$WEB_ROOT/www
 }
 
 # 安装依赖
@@ -396,6 +396,7 @@ main() {
   deploy_code
   echo -e "${GREEN}1. 安装依赖...${NC}"
   install_packages
+  echo -e "${GREEN}依赖安装完成，继续后续步骤...${NC}"
   echo -e "${GREEN}2. 启动服务...${NC}"
   start_services
   echo -e "${GREEN}3. 初始化MySQL...${NC}"
