@@ -95,6 +95,8 @@ install_packages() {
       yum install -y nginx
       # 安装MySQL 5.7
       rpm -Uvh https://repo.mysql.com/mysql57-community-release-el7-11.noarch.rpm
+      # 自动导入MySQL官方GPG公钥，避免GPG校验失败
+      rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql || rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
       yum install -y mysql-community-server
       # 安装PHP 7.4
       yum install -y https://rpms.remirepo.net/enterprise/remi-release-7.rpm
