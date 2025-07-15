@@ -83,6 +83,14 @@ install_packages() {
       ;;
     centos|rocky|almalinux|openEuler)
       yum install -y epel-release wget curl unzip pwgen
+      # 禁用系统自带MySQL模块，避免yum/dnf模块化机制导致无法安装mysql-community-server
+      if command -v dnf >/dev/null 2>&1; then
+        dnf module disable -y mysql || true
+      elif command -v yum >/dev/null 2>&1; then
+        yum module disable -y mysql || true
+      fi
+      yum clean all
+      yum makecache
       # 安装Nginx
       yum install -y nginx
       # 安装MySQL 5.7
