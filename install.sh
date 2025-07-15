@@ -67,15 +67,15 @@ install_packages() {
       export DEBIAN_FRONTEND=noninteractive
       apt-get update
       apt-get install -y lsb-release gnupg2 curl wget unzip pwgen
-      # 安装Nginx
+      echo "[INFO] 安装Nginx..."
       apt-get install -y nginx
-      # 安装MySQL 5.7
+      echo "[INFO] 安装MySQL 5.7..."
       wget https://dev.mysql.com/get/mysql-apt-config_0.8.13-1_all.deb
       echo "mysql-apt-config mysql-apt-config/select-server select mysql-5.7" | debconf-set-selections
       dpkg -i mysql-apt-config_0.8.13-1_all.deb
       apt-get update
       apt-get install -y mysql-server
-      # 安装PHP 7.4
+      echo "[INFO] 安装PHP 7.4..."
       apt-get install -y software-properties-common
       add-apt-repository ppa:ondrej/php -y
       apt-get update
@@ -89,16 +89,31 @@ install_packages() {
       elif command -v yum >/dev/null 2>&1; then
         yum module disable -y mysql || true
       fi
+      # 清理旧MySQL GPG公钥，导入新公钥，修正repo文件gpgkey
+      rpm -e gpg-pubkey-5072e1f5-* || true
+      rpm -e gpg-pubkey-3a79bd29-* || true
+      rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
+      sed -i 's|gpgkey=.*|gpgkey=https://repo.mysql.com/RPM-GPG-KEY-mysql-2022|' /etc/yum.repos.d/mysql-community*.repo || true
       yum clean all
       yum makecache
-      # 安装Nginx
+      echo "[INFO] 安装Nginx..."
       yum install -y nginx
-      # 安装MySQL 5.7
-      rpm -Uvh https://repo.mysql.com/mysql57-community-release-el7-11.noarch.rpm
+      echo "[INFO] 检查并卸载MariaDB..."
+      if rpm -qa | grep -qi mariadb; then
+        yum remove -y mariadb* || true
+      fi
+      echo "[INFO] 配置MySQL官方源..."
+      rpm -Uvh https://repo.mysql.com/mysql57-community-release-el7-11.noarch.rpm || true
       # 自动导入MySQL官方GPG公钥，避免GPG校验失败
       rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql || rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-      yum install -y mysql-community-server
-      # 安装PHP 7.4
+      echo "[INFO] 检查MySQL 5.7是否已安装..."
+      if ! rpm -qa | grep -q mysql-community-server; then
+        echo "[INFO] 安装MySQL 5.7..."
+        yum install -y mysql-community-server
+      else
+        echo "[INFO] MySQL 5.7已安装，跳过安装步骤。"
+      fi
+      echo "[INFO] 安装PHP 7.4..."
       yum install -y https://rpms.remirepo.net/enterprise/remi-release-7.rpm
       yum-config-manager --enable remi-php74
       yum install -y php php-fpm php-mysqlnd php-mbstring php-json php-xml php-curl php-zip
@@ -110,14 +125,43 @@ install_packages() {
   esac
 }
 
-# 启动服务
+# 启动服务，自动检测服务名
 start_services() {
-  systemctl enable nginx
-  systemctl start nginx
-  systemctl enable mysqld || systemctl enable mysql
-  systemctl start mysqld || systemctl start mysql
-  systemctl enable php7.4-fpm || systemctl enable php-fpm
-  systemctl start php7.4-fpm || systemctl start php-fpm
+  echo "[INFO] 启动Nginx服务..."
+  systemctl enable nginx || echo "[WARN] Nginx enable 失败"
+  systemctl start nginx || echo "[WARN] Nginx start 失败"
+
+  # 检查MySQL服务名
+  MYSQL_SERVICE=""
+  if systemctl list-unit-files | grep -q mysqld; then
+    MYSQL_SERVICE="mysqld"
+  elif systemctl list-unit-files | grep -q mysql; then
+    MYSQL_SERVICE="mysql"
+  elif systemctl list-unit-files | grep -q mariadb; then
+    MYSQL_SERVICE="mariadb"
+  fi
+  if [ -n "$MYSQL_SERVICE" ]; then
+    echo "[INFO] 启动MySQL服务($MYSQL_SERVICE)..."
+    systemctl enable $MYSQL_SERVICE || echo "[WARN] $MYSQL_SERVICE enable 失败"
+    systemctl start $MYSQL_SERVICE || echo "[WARN] $MYSQL_SERVICE start 失败"
+  else
+    echo "[ERROR] 未检测到MySQL服务，请检查安装日志。"
+  fi
+
+  # 检查PHP-FPM服务名
+  PHPFPM_SERVICE=""
+  if systemctl list-unit-files | grep -q php7.4-fpm; then
+    PHPFPM_SERVICE="php7.4-fpm"
+  elif systemctl list-unit-files | grep -q php-fpm; then
+    PHPFPM_SERVICE="php-fpm"
+  fi
+  if [ -n "$PHPFPM_SERVICE" ]; then
+    echo "[INFO] 启动PHP-FPM服务($PHPFPM_SERVICE)..."
+    systemctl enable $PHPFPM_SERVICE || echo "[WARN] $PHPFPM_SERVICE enable 失败"
+    systemctl start $PHPFPM_SERVICE || echo "[WARN] $PHPFPM_SERVICE start 失败"
+  else
+    echo "[ERROR] 未检测到PHP-FPM服务，请检查安装日志。"
+  fi
 }
 
 # 初始化MySQL
