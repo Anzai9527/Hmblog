@@ -1,0 +1,620 @@
+/* 文章管理页面样式 */
+
+/* 整体字体大小调整 */
+.main-content, .dashboard-card, .dashboard-card-body, .dashboard-card-header, .table, .table th, .table td, .btn, .form-control, .form-select, .form-label, .form-text, .text-muted {
+    font-size: 14px;
+}
+
+/* 上传组件样式 */
+.upload-progress {
+    display: none;
+    margin-bottom: 1rem;
+}
+
+.upload-buttons input[type="file"] {
+    display: none;
+}
+
+.upload-info {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+/* 确保Markdown编辑器预览中的图片能正确显示 */
+.editor-preview img, 
+.editor-preview-side img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin: 1rem 0;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.editor-preview img:hover, 
+.editor-preview-side img:hover {
+    transform: scale(1.02);
+}
+
+/* 改善文字排版 */
+.editor-preview,
+.editor-preview-side {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.editor-preview h1,
+.editor-preview h2,
+.editor-preview h3,
+.editor-preview h4,
+.editor-preview h5,
+.editor-preview h6,
+.editor-preview-side h1,
+.editor-preview-side h2,
+.editor-preview-side h3,
+.editor-preview-side h4,
+.editor-preview-side h5,
+.editor-preview-side h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #2d3748;
+}
+
+.editor-preview h1,
+.editor-preview-side h1 {
+    font-size: 2rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.editor-preview h2,
+.editor-preview-side h2 {
+    font-size: 1.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.25rem;
+}
+
+.editor-preview h3,
+.editor-preview-side h3 {
+    font-size: 1.5rem;
+}
+
+.editor-preview p,
+.editor-preview-side p {
+    margin-bottom: 1rem;
+    text-align: justify;
+}
+
+.editor-preview ul,
+.editor-preview ol,
+.editor-preview-side ul,
+.editor-preview-side ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+}
+
+.editor-preview li,
+.editor-preview-side li {
+    margin-bottom: 0.5rem;
+}
+
+.editor-preview blockquote,
+.editor-preview-side blockquote {
+    border-left: 4px solid #4299e1;
+    background-color: #f7fafc;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #4a5568;
+}
+
+.editor-preview table,
+.editor-preview-side table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.editor-preview th,
+.editor-preview-side th {
+    background-color: #f7fafc;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.editor-preview td,
+.editor-preview-side td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.editor-preview tr:hover,
+.editor-preview-side tr:hover {
+    background-color: #f7fafc;
+}
+
+/* 处理图片加载失败的情况 */
+.editor-preview img[src*="../uploads/images/"], 
+.editor-preview-side img[src*="../uploads/images/"] {
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.editor-preview img[src*="../uploads/images/"]:after, 
+.editor-preview-side img[src*="../uploads/images/"]:after {
+    content: "图片加载中...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #6c757d;
+}
+
+/* 批量操作工具栏样式 */
+.batch-actions-toolbar {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 1rem;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.batch-actions-toolbar .btn-sm {
+    padding: 4px 12px;
+    font-size: 0.875rem;
+}
+
+.batch-actions-toolbar .vr {
+    height: 20px;
+    opacity: 0.3;
+}
+
+/* 复选框样式优化 */
+.form-check-input:indeterminate {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-check-input:indeterminate::before {
+    content: "−";
+    display: block;
+    color: white;
+    text-align: center;
+    line-height: 1;
+    font-size: 12px;
+}
+
+/* 表格行选中效果 */
+tr:has(.post-checkbox:checked) {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+tr:has(.post-checkbox:checked) td {
+    border-color: rgba(13, 110, 253, 0.2);
+}
+
+/* 可点击的表格行样式 */
+tr:has(.post-checkbox) {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+tr:has(.post-checkbox) td:first-child {
+    cursor: default;
+}
+
+/* 有评论的文章行样式 */
+tr:has(.text-primary.fw-bold) {
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+tr:has(.text-primary.fw-bold):hover {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* 表头工具提示样式 */
+th .fa-info-circle {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+th .fa-info-circle:hover {
+    opacity: 1;
+}
+
+/* 删除按钮样式优化 */
+.btn-outline-danger:hover {
+    border-color: #dc3545;
+    background-color: #dc3545;
+    color: white;
+}
+
+/* 有评论文章的删除按钮特殊样式 */
+tr:has(.text-primary.fw-bold) .btn-outline-danger {
+    border-color: #fd7e14;
+    color: #fd7e14;
+}
+
+tr:has(.text-primary.fw-bold) .btn-outline-danger:hover {
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+    color: white;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .batch-actions-toolbar {
+        padding: 10px 12px;
+    }
+    
+    .batch-actions-toolbar .d-flex {
+        flex-direction: column;
+        gap: 8px !important;
+    }
+    
+    .batch-actions-toolbar .btn-group {
+        justify-content: center;
+    }
+    
+    .batch-actions-toolbar .vr {
+        display: none;
+    }
+    
+    .batch-actions-toolbar .btn-sm {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+    
+    /* 移动端隐藏操作提示 */
+    .dashboard-card-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+    
+    .dashboard-card-header small:first-of-type {
+        display: none;
+    }
+    
+    /* 移动端隐藏评论列 */
+    th:nth-child(7),
+    td:nth-child(7) {
+        display: none;
+    }
+    
+    /* 调整空行列数 */
+    .table td[colspan="9"] {
+        colspan: 8;
+    }
+}
+
+/* 标签字体大小调整 */
+.badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* 代码块样式优化 */
+.editor-preview pre,
+.editor-preview-side pre {
+    background-color: #2d3748;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    border: 1px solid #4a5568;
+}
+
+.editor-preview pre code,
+.editor-preview-side pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #e2e8f0;
+}
+
+/* 代码语法高亮主题优化 */
+.editor-preview .token.comment,
+.editor-preview-side .token.comment {
+    color: #718096;
+    font-style: italic;
+}
+
+.editor-preview .token.keyword,
+.editor-preview-side .token.keyword {
+    color: #f6ad55;
+    font-weight: 600;
+}
+
+.editor-preview .token.string,
+.editor-preview-side .token.string {
+    color: #68d391;
+}
+
+.editor-preview .token.number,
+.editor-preview-side .token.number {
+    color: #f687b3;
+}
+
+.editor-preview .token.function,
+.editor-preview-side .token.function {
+    color: #63b3ed;
+}
+
+.editor-preview .token.class-name,
+.editor-preview-side .token.class-name {
+    color: #f6e05e;
+}
+
+/* 代码模板对话框样式 */
+#codeTemplateModal .modal-dialog {
+    max-width: 900px;
+}
+
+#codeTemplateModal .list-group-item {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+
+#codeTemplateModal .list-group-item:first-child {
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+}
+
+#codeTemplateModal .list-group-item:last-child {
+    border-bottom-left-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+
+#codeTemplateModal .list-group-item:hover {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+#codeTemplateModal .list-group-item.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+#codeTemplateModal .list-group-item.active:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+#codeTemplateModal pre {
+    background-color: #2d3748;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#codeTemplateModal pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #e2e8f0;
+}
+
+/* 行内代码样式 */
+.editor-preview code:not(pre code),
+.editor-preview-side code:not(pre code) {
+    background-color: #f1f5f9;
+    color: #e53e3e;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875em;
+}
+
+/* 代码块语言标识 */
+.editor-preview pre::before,
+.editor-preview-side pre::before {
+    content: attr(data-language);
+    display: block;
+    background-color: #4a5568;
+    color: #e2e8f0;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 0.375rem 0.375rem 0 0;
+    margin: -1rem -1rem 1rem -1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 代码块复制按钮 */
+.editor-preview pre,
+.editor-preview-side pre {
+    position: relative;
+}
+
+.editor-preview pre::after,
+.editor-preview-side pre::after {
+    content: "复制";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.editor-preview pre:hover::after,
+.editor-preview-side pre:hover::after {
+    opacity: 1;
+}
+
+/* 工具栏代码按钮样式 */
+.editor-toolbar button[title="代码块"] {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.125rem;
+    transition: all 0.2s ease;
+}
+
+.editor-toolbar button[title="代码块"]:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.editor-toolbar button[title="行内代码"] {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.125rem;
+    transition: all 0.2s ease;
+}
+
+.editor-toolbar button[title="行内代码"]:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.editor-toolbar button[title="代码模板"] {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.125rem;
+    transition: all 0.2s ease;
+}
+
+.editor-toolbar button[title="代码模板"]:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* 图片预览区域样式 */
+#image-preview {
+    animation: slideDown 0.3s ease-out;
+}
+
+#image-preview .card {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#image-preview .card-header {
+    background-color: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 10px 10px 0 0;
+}
+
+#image-preview .card-body {
+    padding: 1.5rem;
+}
+
+#preview-img {
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+#preview-img:hover {
+    transform: scale(1.05);
+}
+
+/* 编辑器工具栏优化 */
+.editor-toolbar {
+    border-bottom: 2px solid #e2e8f0;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.editor-toolbar button {
+    border-radius: 6px;
+    margin: 2px;
+    transition: all 0.2s ease;
+}
+
+.editor-toolbar button:hover {
+    background-color: #e9ecef;
+    transform: translateY(-1px);
+}
+
+/* 编辑器内容区域优化 */
+.CodeMirror {
+    border-radius: 0 0 8px 8px;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.CodeMirror-linenumbers {
+    background-color: #f8f9fa;
+    border-right: 1px solid #e2e8f0;
+}
+
+/* 预览模式优化 */
+.editor-preview,
+.editor-preview-side {
+    padding: 2rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 响应式图片预览 */
+@media (max-width: 768px) {
+    #image-preview .card-body {
+        padding: 1rem;
+    }
+    
+    #preview-img {
+        max-height: 200px;
+    }
+    
+    .editor-preview,
+    .editor-preview-side {
+        padding: 1rem;
+    }
+} 

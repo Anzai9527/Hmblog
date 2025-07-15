@@ -1,0 +1,268 @@
+/* 个人中心页面样式 */
+.container {
+    display: flex;
+    min-height: 100vh;
+    background: #f8f9fa;
+}
+
+.profile-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 32px;
+    padding: 32px 0;
+}
+.profile-sidebar {
+    width: 260px;
+    min-width: 200px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 20px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+}
+.profile-main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 突出显示个人中心链接 */
+.user-profile .user-info a[href*="profile.php"] {
+    font-weight: bold;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* 个人中心页面特殊样式 */
+.main-content {
+    background: #f8f9fa;
+    flex: 1;
+    min-width: 0;
+}
+
+/* 主内容区纵向排列，蓝色在上 */
+.profile-main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.profile-header {
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.profile-content-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    width: 100%;
+    max-width: 1100px;
+}
+
+.profile-card {
+    flex: 1 1 0;
+    max-width: 520px;
+}
+
+.profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    min-width: 380px;
+    max-width: 520px;
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin: 0 0 30px 0;
+    text-align: center;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid white;
+    margin: 0 auto 20px;
+    overflow: hidden;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.profile-email {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 25px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 20px;
+    font-weight: 600;
+    display: block;
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e1e1e1;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.alert-danger {
+    background: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.alert-success {
+    background: #efe;
+    color: #3c3;
+    border: 1px solid #cfc;
+}
+
+.post-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.post-item:last-child {
+    border-bottom: none;
+}
+
+.post-title {
+    font-weight: 500;
+    color: #333;
+    font-size: 16px;
+}
+
+.post-meta {
+    font-size: 12px;
+    color: #666;
+}
+
+.post-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.post-status.publish {
+    background: #d4edda;
+    color: #155724;
+}
+
+.post-status.draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* 响应式设计 */
+@media (max-width: 900px) {
+    .profile-content-row {
+        flex-direction: column;
+        gap: 20px;
+        max-width: 100%;
+    }
+    .profile-card {
+        max-width: 100%;
+    }
+} 

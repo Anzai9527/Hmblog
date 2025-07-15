@@ -1,0 +1,44 @@
+# Nginx 伪静态规则配置
+# 适用于 hmjisu.com 博客系统
+
+# 文章详情页：post.php?id=18 -> post/18.html
+rewrite ^/post/([0-9]+)\.html$ /post.php?id=$1 last;
+
+# 标签搜索页：index.php?view=tags -> index/tags.html
+rewrite ^/index/tags\.html$ /index.php?view=tags last;
+
+# 归档页：index.php?archive=2025+%E5%B9%B4+07+%E6%9C%88 -> index/archive/2025+%E5%B9%B4+07+%E6%9C%88.html
+rewrite ^/index/archive/(.+?)\.html$ /index.php?archive=$1 last;
+
+# 标签页：index.php?tag=123 -> index/tag/123.html
+rewrite ^/index/tag/(.+?)\.html$ /index.php?tag=$1 last;
+
+# 分类页：index.php?category=分类名 -> index/category/分类名.html
+rewrite ^/index/category/(.+?)\.html$ /index.php?category=$1 last;
+
+# 首页保持原样
+rewrite ^/$ /index.php last;
+
+# 其他PHP文件保持原样
+location ~ \.php$ {
+    try_files $uri =404;
+    fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; # 根据您的PHP-FPM配置调整
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+}
+
+# 静态文件缓存
+location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+
+# 安全设置
+location ~ /\. {
+    deny all;
+}
+
+location ~ /(config|includes|admin)/ {
+    deny all;
+} 

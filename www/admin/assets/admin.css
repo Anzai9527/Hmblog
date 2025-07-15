@@ -1,0 +1,767 @@
+/* 全局变量 */
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --success-color: #2ecc71;
+    --info-color: #3498db;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+    --light-color: #f8f9fa;
+    --dark-color: #2c3e50;
+    --border-radius: 10px;
+    --box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+/* 全局样式 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #2c3e50;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* 移动端菜单按钮 */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    width: 44px;
+    height: 44px;
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.mobile-menu-toggle:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.mobile-menu-toggle .hamburger {
+    width: 20px;
+    height: 2px;
+    background: #333;
+    position: relative;
+    transition: var(--transition);
+}
+
+.mobile-menu-toggle .hamburger::before,
+.mobile-menu-toggle .hamburger::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 2px;
+    background: #333;
+    transition: var(--transition);
+}
+
+.mobile-menu-toggle .hamburger::before {
+    top: -6px;
+}
+
+.mobile-menu-toggle .hamburger::after {
+    bottom: -6px;
+}
+
+.mobile-menu-toggle.active .hamburger {
+    background: transparent;
+}
+
+.mobile-menu-toggle.active .hamburger::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.mobile-menu-toggle.active .hamburger::after {
+    transform: rotate(-45deg);
+    bottom: 0;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+    box-shadow: var(--box-shadow);
+    height: 100vh;
+    padding: 1.5rem;
+    position: fixed;
+    width: 280px;
+    transition: var(--transition);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.sidebar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transition: var(--transition);
+}
+
+.sidebar-brand:hover {
+    color: #fff;
+    text-decoration: none;
+    transform: translateX(5px);
+}
+
+.sidebar-brand i {
+    margin-right: 0.75rem;
+    font-size: 1.75rem;
+}
+
+.nav-tabs {
+    border: none;
+    margin-bottom: 1rem;
+    flex-direction: column;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: rgba(255,255,255,0.8);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 0.5rem;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.nav-tabs .nav-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.nav-tabs .nav-link.active {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 0.75rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* 主内容区域 */
+.main-content {
+    margin-left: 280px;
+    padding: 2rem;
+    transition: var(--transition);
+}
+
+/* 卡片样式 */
+.card {
+    background: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+/* 表格样式 */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #666;
+    background: rgba(67, 97, 238, 0.05);
+    border-top: none;
+    padding: 1rem 1.5rem;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(67, 97, 238, 0.05);
+}
+
+/* 状态标签 */
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.published {
+    background: rgba(46, 204, 113, 0.1);
+    color: var(--success-color);
+}
+
+.status-badge.draft {
+    background: rgba(241, 196, 15, 0.1);
+    color: var(--warning-color);
+}
+
+/* 按钮样式 */
+.btn {
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.btn-success:hover {
+    background: #27ae60;
+    border-color: #27ae60;
+    transform: translateY(-2px);
+}
+
+/* 表单样式 */
+.form-control, .form-select {
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+    outline: none;
+}
+
+/* 模态框样式 */
+.modal-content {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.modal-header {
+    background: rgba(67, 97, 238, 0.05);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding: 1.5rem;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* 页面标题 */
+.page-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 数据卡片 */
+.data-card {
+    background: #fff;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    text-align: center;
+}
+
+.data-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+/* 工具栏 */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* 搜索表单 */
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* 响应式设计 - 大屏幕 */
+@media (max-width: 1200px) {
+    .main-content {
+        padding: 1.5rem;
+    }
+    
+    .sidebar {
+        width: 260px;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .search-form {
+        width: 100%;
+    }
+}
+
+/* 响应式设计 - 平板 */
+@media (max-width: 992px) {
+    .sidebar {
+        left: -280px;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-control,
+    .form-select {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+}
+
+/* 响应式设计 - 手机横屏 */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 0.8rem;
+        margin-top: 60px;
+    }
+    
+    .mobile-menu-toggle {
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .mobile-menu-toggle .hamburger,
+    .mobile-menu-toggle .hamburger::before,
+    .mobile-menu-toggle .hamburger::after {
+        width: 18px;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .form-control,
+    .form-select {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.85rem;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .data-card {
+        padding: 1rem;
+    }
+    
+    .toolbar {
+        gap: 0.8rem;
+    }
+    
+    .search-form {
+        gap: 0.4rem;
+    }
+}
+
+/* 响应式设计 - 手机竖屏 */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.5rem;
+        margin-top: 50px;
+    }
+    
+    .mobile-menu-toggle {
+        top: 10px;
+        left: 10px;
+        width: 36px;
+        height: 36px;
+    }
+    
+    .mobile-menu-toggle .hamburger,
+    .mobile-menu-toggle .hamburger::before,
+    .mobile-menu-toggle .hamburger::after {
+        width: 16px;
+    }
+    
+    .page-title {
+        font-size: 1.3rem;
+    }
+    
+    .card {
+        margin-bottom: 0.8rem;
+        border-radius: 6px;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+    
+    .form-control,
+    .form-select {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+    
+    .status-badge {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 15px;
+    }
+    
+    .data-card {
+        padding: 0.8rem;
+        border-radius: 6px;
+    }
+    
+    .toolbar {
+        gap: 0.6rem;
+    }
+    
+    .search-form {
+        gap: 0.3rem;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 0.8rem;
+    }
+    
+    .modal-content {
+        border-radius: 6px;
+    }
+}
+
+/* 响应式设计 - 超小屏幕 */
+@media (max-width: 360px) {
+    .main-content {
+        padding: 0.4rem;
+        margin-top: 45px;
+    }
+    
+    .mobile-menu-toggle {
+        top: 8px;
+        left: 8px;
+        width: 32px;
+        height: 32px;
+    }
+    
+    .mobile-menu-toggle .hamburger,
+    .mobile-menu-toggle .hamburger::before,
+    .mobile-menu-toggle .hamburger::after {
+        width: 14px;
+    }
+    
+    .page-title {
+        font-size: 1.2rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .btn {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .form-control,
+    .form-select {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .status-badge {
+        padding: 0.15rem 0.4rem;
+        font-size: 0.65rem;
+    }
+    
+    .data-card {
+        padding: 0.6rem;
+    }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .sidebar-brand:hover,
+    .nav-tabs .nav-link:hover,
+    .btn:hover,
+    .card:hover,
+    .data-card:hover {
+        transform: none;
+    }
+    
+    .sidebar-brand:active,
+    .nav-tabs .nav-link:active,
+    .btn:active,
+    .card:active,
+    .data-card:active {
+        transform: scale(0.95);
+    }
+}
+
+/* 高分辨率屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .sidebar-brand i,
+    .nav-tabs .nav-link i {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .sidebar,
+    .mobile-menu-toggle,
+    .toolbar,
+    .btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        break-inside: avoid;
+    }
+    
+    .table {
+        font-size: 12px !important;
+    }
+    
+    .table th,
+    .table td {
+        padding: 8px !important;
+    }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+    
+    .card,
+    .data-card,
+    .modal-content {
+        background: #2d2d2d;
+        color: #e0e0e0;
+    }
+    
+    .table th {
+        background: rgba(67, 97, 238, 0.1);
+        color: #e0e0e0;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .form-control,
+    .form-select {
+        background: #3d3d3d;
+        border-color: #4d4d4d;
+        color: #e0e0e0;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        background: #3d3d3d;
+        border-color: var(--primary-color);
+    }
+    
+    .modal-header {
+        background: rgba(67, 97, 238, 0.1);
+        border-bottom-color: #4d4d4d;
+    }
+    
+    .mobile-menu-toggle {
+        background: #2d2d2d;
+    }
+    
+    .mobile-menu-toggle .hamburger,
+    .mobile-menu-toggle .hamburger::before,
+    .mobile-menu-toggle .hamburger::after {
+        background: #e0e0e0;
+    }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+} 
