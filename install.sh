@@ -1,420 +1,393 @@
 #!/bin/bash
-# HM博客一键安装脚本
-# 适配 Ubuntu/Debian/CentOS/Rocky/Alma/openEuler 等主流Linux发行版
-# 安装 MySQL 5.7、Nginx、PHP 7.4，自动初始化数据库和站点
+
+# Hmblog一键安装脚本
+# 支持Ubuntu/Debian和CentOS/RHEL系统
+# 自动安装PHP 7.4+、MySQL 5.7+、Nginx并部署Hmblog
 
 set -e
 
-# 颜色输出
-GREEN='\033[0;32m'
+# 颜色定义
 RED='\033[0;31m'
-NC='\033[0m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# 检查root权限
-if [ "$EUID" -ne 0 ]; then
-  echo -e "${RED}请以root权限运行本脚本！${NC}"
-  exit 1
-fi
+# 日志函数
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# 检查是否为root用户
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        log_error "此脚本需要root权限运行"
+        exit 1
+    fi
+}
 
 # 检测系统类型
-if [ -f /etc/os-release ]; then
-  . /etc/os-release
-  OS=$ID
-else
-  echo -e "${RED}无法识别的Linux发行版！${NC}"
-  exit 1
-fi
-
-# 生成随机数据库密码
-DB_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16)
-DB_NAME="hmblog"
-DB_USER="hmblog"
-ADMIN_USER="admin"
-ADMIN_PASS="admin"
-SITE_NAME="HM博客"
-SITE_URL="http://$(hostname -I | awk '{print $1}')"
-
-# 变量
-GIT_REPO="https://github.com/Anzai9527/Hmblog.git"
-WEB_ROOT="/hmblog"
-
-# 安装git
-install_git() {
-  if ! command -v git >/dev/null 2>&1; then
-    case $OS in
-      ubuntu|debian) apt-get install -y git ;;
-      centos|rocky|almalinux|openEuler) yum install -y git ;;
-    esac
-  fi
-}
-
-# 拉取或更新代码
-deploy_code() {
-  if [ ! -d "$WEB_ROOT" ]; then
-    git clone "$GIT_REPO" "$WEB_ROOT"
-  else
-    cd "$WEB_ROOT"
-    git pull
-    cd -
-  fi
-  # 不要cd到$WEB_ROOT/www
-}
-
-# 安装依赖
-install_packages() {
-  case $OS in
-    ubuntu|debian)
-      export DEBIAN_FRONTEND=noninteractive
-      apt-get update
-      apt-get install -y lsb-release gnupg2 curl wget unzip pwgen
-      echo "[INFO] 安装Nginx..."
-      apt-get install -y nginx
-      echo "[INFO] 安装MySQL 5.7..."
-      wget https://dev.mysql.com/get/mysql-apt-config_0.8.13-1_all.deb
-      echo "mysql-apt-config mysql-apt-config/select-server select mysql-5.7" | debconf-set-selections
-      dpkg -i mysql-apt-config_0.8.13-1_all.deb
-      apt-get update
-      apt-get install -y mysql-server
-      echo "[INFO] 安装PHP 7.4..."
-      apt-get install -y software-properties-common
-      add-apt-repository ppa:ondrej/php -y
-      apt-get update
-      apt-get install -y php7.4 php7.4-fpm php7.4-mysql php7.4-mbstring php7.4-json php7.4-xml php7.4-curl php7.4-zip
-      ;;
-    centos|rocky|almalinux|openEuler)
-      yum install -y epel-release wget curl unzip pwgen
-      # 禁用系统自带MySQL模块，避免yum/dnf模块化机制导致无法安装mysql-community-server
-      if command -v dnf >/dev/null 2>&1; then
-        dnf module disable -y mysql || true
-      elif command -v yum >/dev/null 2>&1; then
-        yum module disable -y mysql || true
-      fi
-      # 清理旧MySQL GPG公钥，导入新公钥，修正repo文件gpgkey
-      rpm -e gpg-pubkey-5072e1f5-* || true
-      rpm -e gpg-pubkey-3a79bd29-* || true
-      rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-      sed -i 's|gpgkey=.*|gpgkey=https://repo.mysql.com/RPM-GPG-KEY-mysql-2022|' /etc/yum.repos.d/mysql-community*.repo || true
-      yum clean all
-      yum makecache
-      echo "[INFO] 安装Nginx..."
-      yum install -y nginx
-      echo "[INFO] 检查并卸载MariaDB..."
-      if rpm -qa | grep -qi mariadb; then
-        yum remove -y mariadb* || true
-      fi
-      echo "[INFO] 配置MySQL官方源..."
-      rpm -Uvh https://repo.mysql.com/mysql57-community-release-el7-11.noarch.rpm || true
-      # 自动导入MySQL官方GPG公钥，避免GPG校验失败
-      rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql || rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-      echo "[INFO] 检查MySQL 5.7是否已安装..."
-      if ! rpm -qa | grep -q mysql-community-server; then
-        echo "[INFO] 安装MySQL 5.7..."
-        yum install -y mysql-community-server
-      else
-        echo "[INFO] MySQL 5.7已安装，跳过安装步骤。"
-      fi
-      echo "[INFO] 安装PHP 7.4..."
-      yum install -y https://rpms.remirepo.net/enterprise/remi-release-7.rpm
-      yum-config-manager --enable remi-php74
-      yum install -y php php-fpm php-mysqlnd php-mbstring php-json php-xml php-curl php-zip
-      ;;
-    *)
-      echo -e "${RED}暂不支持的Linux发行版: $OS${NC}"
-      exit 1
-      ;;
-  esac
-}
-
-# 启动服务，自动检测服务名
-start_services() {
-  echo "[INFO] 启动Nginx服务..."
-  systemctl enable nginx || echo "[WARN] Nginx enable 失败"
-  systemctl start nginx || echo "[WARN] Nginx start 失败"
-
-  # 检查MySQL服务名
-  MYSQL_SERVICE=""
-  if systemctl list-unit-files | grep -q mysqld; then
-    MYSQL_SERVICE="mysqld"
-  elif systemctl list-unit-files | grep -q mysql; then
-    MYSQL_SERVICE="mysql"
-  elif systemctl list-unit-files | grep -q mariadb; then
-    MYSQL_SERVICE="mariadb"
-  fi
-  if [ -n "$MYSQL_SERVICE" ]; then
-    echo "[INFO] 启动MySQL服务($MYSQL_SERVICE)..."
-    systemctl enable $MYSQL_SERVICE || echo "[WARN] $MYSQL_SERVICE enable 失败"
-    systemctl start $MYSQL_SERVICE || echo "[WARN] $MYSQL_SERVICE start 失败"
-  else
-    echo "[ERROR] 未检测到MySQL服务，请检查安装日志。"
-  fi
-
-  # 检查PHP-FPM服务名
-  PHPFPM_SERVICE=""
-  if systemctl list-unit-files | grep -q php7.4-fpm; then
-    PHPFPM_SERVICE="php7.4-fpm"
-  elif systemctl list-unit-files | grep -q php-fpm; then
-    PHPFPM_SERVICE="php-fpm"
-  fi
-  if [ -n "$PHPFPM_SERVICE" ]; then
-    echo "[INFO] 启动PHP-FPM服务($PHPFPM_SERVICE)..."
-    systemctl enable $PHPFPM_SERVICE || echo "[WARN] $PHPFPM_SERVICE enable 失败"
-    systemctl start $PHPFPM_SERVICE || echo "[WARN] $PHPFPM_SERVICE start 失败"
-  else
-    echo "[ERROR] 未检测到PHP-FPM服务，请检查安装日志。"
-  fi
-}
-
-# 初始化MySQL
-init_mysql() {
-  # 获取MySQL root密码（CentOS首次安装有临时密码）
-  MYSQL_ROOT_PASS="root"
-  if [ "$OS" = "centos" ] || [ "$OS" = "rocky" ] || [ "$OS" = "almalinux" ] || [ "$OS" = "openEuler" ]; then
-    TEMP_PASS=$(grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}' | tail -1)
-    if [ -n "$TEMP_PASS" ]; then
-      MYSQL_ROOT_PASS="$TEMP_PASS"
-      mysql --connect-expired-password -uroot -p"$MYSQL_ROOT_PASS" -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';"
-      MYSQL_ROOT_PASS="root"
+detect_os() {
+    if [[ -f /etc/redhat-release ]]; then
+        OS="centos"
+        log_info "检测到CentOS/RHEL系统"
+    elif [[ -f /etc/debian_version ]]; then
+        OS="ubuntu"
+        log_info "检测到Ubuntu/Debian系统"
+    else
+        log_error "不支持的操作系统"
+        exit 1
     fi
-  fi
-
-  # 创建数据库和用户
-  mysql -uroot -p"$MYSQL_ROOT_PASS" <<EOF
-CREATE DATABASE IF NOT EXISTS $DB_NAME DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS';
-GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';
-FLUSH PRIVILEGES;
-EOF
 }
 
-# 生成includes/config.php
-write_config_php() {
-  mkdir -p includes
-  cat > includes/config.php <<EOL
-<?php
-// 数据库配置
-define('DB_HOST', 'localhost');
-define('DB_NAME', '$DB_NAME');
-define('DB_USER', '$DB_USER');
-define('DB_PASS', '$DB_PASS');
-define('DB_CHARSET', 'utf8mb4');
-// 其他配置将在安装过程中添加
-EOL
+# 更新系统包
+update_system() {
+    log_info "更新系统包..."
+    if [[ $OS == "ubuntu" ]]; then
+        apt update && apt upgrade -y
+        apt install -y curl wget unzip git software-properties-common
+    else
+        yum update -y
+        yum install -y curl wget unzip git epel-release
+    fi
 }
 
-# 导入表结构和管理员账号
-init_db_schema() {
-  mysql -u$DB_USER -p$DB_PASS $DB_NAME <<EOSQL
--- 用户表
-CREATE TABLE IF NOT EXISTS users (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  username varchar(50) NOT NULL,
-  password varchar(255) NOT NULL,
-  email varchar(100) NOT NULL,
-  role enum('admin','editor','subscriber') DEFAULT 'subscriber',
-  status tinyint(1) DEFAULT 1,
-  created_at datetime DEFAULT CURRENT_TIMESTAMP,
-  last_login datetime DEFAULT NULL,
-  avatar varchar(255) DEFAULT NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY username (username),
-  UNIQUE KEY email (email)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 分类表
-CREATE TABLE IF NOT EXISTS categories (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  name varchar(50) NOT NULL,
-  slug varchar(50) NOT NULL,
-  description varchar(255) DEFAULT NULL,
-  parent_id int(11) DEFAULT NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY slug (slug)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 标签表
-CREATE TABLE IF NOT EXISTS tags (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  name varchar(50) NOT NULL,
-  slug varchar(50) NOT NULL,
-  created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (id),
-  UNIQUE KEY slug (slug)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 文章表
-CREATE TABLE IF NOT EXISTS posts (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  title varchar(255) NOT NULL,
-  slug varchar(255) DEFAULT NULL,
-  content text,
-  cover_image varchar(255) DEFAULT NULL COMMENT '文章封面图片路径',
-  excerpt text,
-  status enum('publish','draft','pending','private') DEFAULT 'draft',
-  author_id int(11) NOT NULL,
-  category_id int(11) DEFAULT NULL,
-  views int(11) DEFAULT 0,
-  created_at datetime DEFAULT CURRENT_TIMESTAMP,
-  updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  likes int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (id),
-  KEY slug (slug),
-  KEY author_id (author_id),
-  KEY category_id (category_id),
-  FULLTEXT KEY title_content (title,content)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 文章标签关联表
-CREATE TABLE IF NOT EXISTS post_tags (
-  post_id int(11) NOT NULL,
-  tag_id int(11) NOT NULL,
-  PRIMARY KEY (post_id,tag_id),
-  KEY tag_id (tag_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 文章分类关联表
-CREATE TABLE IF NOT EXISTS post_categories (
-  post_id int(11) NOT NULL,
-  category_id int(11) NOT NULL,
-  PRIMARY KEY (post_id,category_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 评论表
-CREATE TABLE IF NOT EXISTS comments (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  post_id int(11) NOT NULL,
-  user_id int(11) NOT NULL,
-  parent_id int(11) DEFAULT NULL,
-  content text COLLATE utf8mb4_unicode_ci NOT NULL,
-  status enum('approved','pending','spam','deleted') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
-  ip_address varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  user_agent text COLLATE utf8mb4_unicode_ci,
-  created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  KEY post_id (post_id),
-  KEY user_id (user_id),
-  KEY parent_id (parent_id),
-  KEY status (status),
-  KEY created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 评论点赞表
-CREATE TABLE IF NOT EXISTS comment_likes (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  comment_id int(11) NOT NULL,
-  user_id int(11) NOT NULL,
-  created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY unique_like (comment_id,user_id),
-  KEY comment_id (comment_id),
-  KEY user_id (user_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 导航表
-CREATE TABLE IF NOT EXISTS navigation (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  title varchar(50) NOT NULL,
-  url varchar(255) NOT NULL,
-  `order` int(11) DEFAULT 0,
-  parent_id int(11) DEFAULT 0,
-  PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 设置表
-CREATE TABLE IF NOT EXISTS settings (
-  name varchar(50) NOT NULL,
-  value text,
-  created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 管理员账号
-INSERT INTO users (username, password, email, role) VALUES ('$ADMIN_USER', '$(php -r "echo password_hash('$ADMIN_PASS', PASSWORD_DEFAULT);")', 'admin@hmblog.local', 'admin') ON DUPLICATE KEY UPDATE username=username;
--- 默认分类
-INSERT INTO categories (name, slug, description, parent_id) VALUES ('默认分类', 'default', '默认分类描述', NULL) ON DUPLICATE KEY UPDATE name=name;
--- 网站设置
-INSERT INTO settings (name, value) VALUES
-  ('site_title', '$SITE_NAME'),
-  ('site_description', '欢迎使用HM博客'),
-  ('site_url', '$SITE_URL'),
-  ('site_author', '$ADMIN_USER'),
-  ('site_keywords', '博客,HM博客,PHP'),
-  ('posts_per_page', '10'),
-  ('default_category', '1'),
-  ('allow_comments', '1'),
-  ('allow_comment_replies', '1'),
-  ('comment_approval_required', '1'),
-  ('comment_max_length', '1000'),
-  ('comment_per_page', '10'),
-  ('comments_per_page', '20'),
-  ('comment_allow_html', '0'),
-  ('comment_close_days', '30'),
-  ('comment_notification_email', ''),
-  ('moderate_comments', '0'),
-  ('auto_generate_sitemap', '0'),
-  ('sitemap_update_frequency', 'daily'),
-  ('banner_image', '')
-ON DUPLICATE KEY UPDATE name=name;
-EOSQL
+# 安装Nginx
+install_nginx() {
+    log_info "安装Nginx..."
+    if [[ $OS == "ubuntu" ]]; then
+        apt install -y nginx
+    else
+        yum install -y nginx
+    fi
+    
+    systemctl enable nginx
+    systemctl start nginx
+    log_info "Nginx安装完成"
 }
 
-# 配置Nginx虚拟主机
-setup_nginx() {
-  NGINX_CONF="/etc/nginx/conf.d/hmblog.conf"
-  cat > $NGINX_CONF <<EON
+# 安装MySQL
+install_mysql() {
+    log_info "安装MySQL 5.7+..."
+    
+    if [[ $OS == "ubuntu" ]]; then
+        # Ubuntu安装MySQL
+        apt install -y mysql-server mysql-client
+        
+        # 启动MySQL服务
+        systemctl enable mysql
+        systemctl start mysql
+        
+        # 设置MySQL root密码
+        mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root123456';"
+        mysql -e "FLUSH PRIVILEGES;"
+        
+    else
+        # CentOS安装MySQL
+        yum install -y mysql-server mysql
+        
+        # 启动MySQL服务
+        systemctl enable mysqld
+        systemctl start mysqld
+        
+        # 获取临时密码并重置
+        TEMP_PASSWORD=$(grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}')
+        mysql -uroot -p"$TEMP_PASSWORD" --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Root123456!';"
+    fi
+    
+    log_info "MySQL安装完成"
+}
+
+# 安装PHP 7.4+
+install_php() {
+    log_info "安装PHP 7.4+..."
+    
+    if [[ $OS == "ubuntu" ]]; then
+        # 添加PHP仓库
+        add-apt-repository ppa:ondrej/php -y
+        apt update
+        
+        # 安装PHP及扩展
+        apt install -y php7.4 php7.4-fpm php7.4-mysql php7.4-curl php7.4-gd \
+                       php7.4-mbstring php7.4-xml php7.4-zip php7.4-json \
+                       php7.4-opcache php7.4-readline
+        
+        # 启动PHP-FPM
+        systemctl enable php7.4-fpm
+        systemctl start php7.4-fpm
+        
+    else
+        # CentOS安装PHP
+        yum install -y https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+        yum-config-manager --enable remi-php74
+        
+        yum install -y php php-fpm php-mysql php-curl php-gd php-mbstring \
+                       php-xml php-zip php-json php-opcache
+        
+        # 启动PHP-FPM
+        systemctl enable php-fpm
+        systemctl start php-fpm
+    fi
+    
+    log_info "PHP安装完成"
+}#
+ 创建数据库和用户
+setup_database() {
+    log_info "创建数据库和用户..."
+    
+    # 创建数据库
+    mysql -uroot -proot123456 -e "CREATE DATABASE IF NOT EXISTS hmblog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    mysql -uroot -proot123456 -e "CREATE USER IF NOT EXISTS 'hmblog'@'localhost' IDENTIFIED BY 'hmblog123456';"
+    mysql -uroot -proot123456 -e "GRANT ALL PRIVILEGES ON hmblog.* TO 'hmblog'@'localhost';"
+    mysql -uroot -proot123456 -e "FLUSH PRIVILEGES;"
+    
+    log_info "数据库创建完成"
+}
+
+# 下载并部署Hmblog
+deploy_hmblog() {
+    log_info "下载并部署Hmblog..."
+    
+    # 创建网站目录
+    mkdir -p /var/www/hmblog
+    cd /var/www/hmblog
+    
+    # 下载项目
+    git clone https://github.com/Anzai9527/Hmblog.git temp
+    cp -r temp/www/* .
+    rm -rf temp
+    
+    # 设置权限
+    chown -R www-data:www-data /var/www/hmblog
+    chmod -R 755 /var/www/hmblog
+    chmod -R 777 /var/www/hmblog/uploads
+    chmod -R 777 /var/www/hmblog/content
+    
+    log_info "Hmblog部署完成"
+}
+
+# 配置Nginx
+configure_nginx() {
+    log_info "配置Nginx..."
+    
+    # 备份默认配置
+    cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak 2>/dev/null || true
+    
+    # 创建Nginx配置
+    cat > /etc/nginx/sites-available/hmblog << 'EOF'
 server {
     listen 80;
-    server_name _;
-    root $WEB_ROOT/www;
-    index index.php index.html;
+    server_name localhost;
+    root /var/www/hmblog;
+    index index.php index.html index.htm;
 
+    # 日志文件
+    access_log /var/log/nginx/hmblog_access.log;
+    error_log /var/log/nginx/hmblog_error.log;
+
+    # 主要位置配置
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
+    # PHP处理
     location ~ \.php$ {
-        include fastcgi_params;
-        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
     }
 
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
-        expires 30d;
-        access_log off;
+    # 静态文件缓存
+    location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
     }
+
+    # 安全配置
+    location ~ /\.ht {
+        deny all;
+    }
+    
+    location ~ /\.git {
+        deny all;
+    }
+
+    # 上传文件大小限制
+    client_max_body_size 100M;
 }
-EON
-  nginx -t && systemctl reload nginx
+EOF
+
+    # 启用站点
+    ln -sf /etc/nginx/sites-available/hmblog /etc/nginx/sites-enabled/
+    rm -f /etc/nginx/sites-enabled/default
+    
+    # 测试配置并重启
+    nginx -t
+    systemctl restart nginx
+    
+    log_info "Nginx配置完成"
 }
 
-# 主流程
+# 初始化数据库
+init_database() {
+    log_info "初始化数据库..."
+    
+    # 创建基础表结构
+    mysql -uhmblog -phmblog123456 hmblog << 'EOF'
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `role` enum('admin','user') DEFAULT 'user',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `posts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `content` longtext NOT NULL,
+  `author_id` int(11) NOT NULL,
+  `status` enum('draft','published') DEFAULT 'draft',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `author_id` (`author_id`),
+  FOREIGN KEY (`author_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` text,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `post_id` int(11) NOT NULL,
+  `author_name` varchar(100) NOT NULL,
+  `author_email` varchar(100) NOT NULL,
+  `content` text NOT NULL,
+  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `post_id` (`post_id`),
+  FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+EOF
+
+    # 插入管理员账户 (密码: admin)
+    ADMIN_PASSWORD=$(php -r "echo password_hash('admin', PASSWORD_DEFAULT);")
+    mysql -uhmblog -phmblog123456 hmblog -e "INSERT IGNORE INTO users (username, password, email, role) VALUES ('admin', '$ADMIN_PASSWORD', 'admin@example.com', 'admin');"
+    
+    log_info "数据库初始化完成"
+}
+
+# 创建配置文件
+create_config() {
+    log_info "创建配置文件..."
+    
+    cat > /var/www/hmblog/includes/config.php << 'EOF'
+<?php
+// 数据库配置
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'hmblog');
+define('DB_USER', 'hmblog');
+define('DB_PASS', 'hmblog123456');
+
+// 站点配置
+define('SITE_URL', 'http://localhost');
+define('SITE_NAME', 'Hmblog');
+define('SITE_DESCRIPTION', '一个简单的博客系统');
+
+// 安全配置
+define('SECRET_KEY', 'your-secret-key-here-' . md5(uniqid()));
+
+// 上传配置
+define('UPLOAD_PATH', __DIR__ . '/../uploads/');
+define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); // 10MB
+
+// 调试模式
+define('DEBUG', false);
+
+// 时区设置
+date_default_timezone_set('Asia/Shanghai');
+?>
+EOF
+
+    chown www-data:www-data /var/www/hmblog/includes/config.php
+    chmod 644 /var/www/hmblog/includes/config.php
+    
+    log_info "配置文件创建完成"
+}
+
+# 设置防火墙
+setup_firewall() {
+    log_info "配置防火墙..."
+    
+    if command -v ufw >/dev/null 2>&1; then
+        ufw --force enable
+        ufw allow 22
+        ufw allow 80
+        ufw allow 443
+    elif command -v firewall-cmd >/dev/null 2>&1; then
+        systemctl enable firewalld
+        systemctl start firewalld
+        firewall-cmd --permanent --add-service=http
+        firewall-cmd --permanent --add-service=https
+        firewall-cmd --permanent --add-service=ssh
+        firewall-cmd --reload
+    fi
+    
+    log_info "防火墙配置完成"
+}
+
+# 主安装函数
 main() {
-  echo -e "${GREEN}0. 安装git...${NC}"
-  install_git
-  echo -e "${GREEN}0. 拉取/更新代码...${NC}"
-  deploy_code
-  echo -e "${GREEN}1. 安装依赖...${NC}"
-  install_packages
-  echo -e "${GREEN}依赖安装完成，继续后续步骤...${NC}"
-  echo -e "${GREEN}2. 启动服务...${NC}"
-  start_services
-  echo -e "${GREEN}3. 初始化MySQL...${NC}"
-  init_mysql
-  echo -e "${GREEN}4. 写入数据库配置...${NC}"
-  write_config_php
-  echo -e "${GREEN}5. 初始化数据库表结构和管理员账号...${NC}"
-  init_db_schema
-  echo -e "${GREEN}6. 配置Nginx虚拟主机...${NC}"
-  setup_nginx
-  echo -e "${GREEN}安装完成！${NC}"
-  echo -e "${GREEN}数据库名: $DB_NAME${NC}"
-  echo -e "${GREEN}数据库用户: $DB_USER${NC}"
-  echo -e "${GREEN}数据库密码: $DB_PASS${NC}"
-  echo -e "${GREEN}管理员账号: $ADMIN_USER${NC}"
-  echo -e "${GREEN}管理员密码: $ADMIN_PASS${NC}"
-  echo -e "${GREEN}站点名: $SITE_NAME${NC}"
-  echo -e "${GREEN}访问地址: $SITE_URL${NC}"
+    log_info "开始安装Hmblog..."
+    
+    check_root
+    detect_os
+    update_system
+    install_nginx
+    install_mysql
+    install_php
+    setup_database
+    deploy_hmblog
+    configure_nginx
+    init_database
+    create_config
+    setup_firewall
+    
+    log_info "安装完成！"
+    echo
+    echo "=================================="
+    echo "Hmblog安装成功！"
+    echo "=================================="
+    echo "访问地址: http://$(curl -s ifconfig.me || echo 'your-server-ip')"
+    echo "后台地址: http://$(curl -s ifconfig.me || echo 'your-server-ip')/admin"
+    echo "管理员账号: admin"
+    echo "管理员密码: admin"
+    echo "数据库用户: hmblog"
+    echo "数据库密码: hmblog123456"
+    echo "=================================="
+    echo
+    log_info "请记住以上信息，并及时修改默认密码！"
 }
 
-main 
+# 执行主函数
+main "$@"
