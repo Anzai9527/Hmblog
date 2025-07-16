@@ -150,8 +150,9 @@ setup_database() {
     mysql -uroot -proot123456 -e "FLUSH PRIVILEGES;"
     
     log_info "数据库创建完成"
-}# 下载并部署Hmb
-log
+}
+
+# 下载并部署Hmblog
 deploy_hmblog() {
     log_info "下载并部署Hmblog..."
     
