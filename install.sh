@@ -54,8 +54,50 @@ update_system() {
         apt update && apt upgrade -y
         apt install -y curl wget unzip git software-properties-common
     else
-        yum update -y
-        yum install -y curl wget unzip git epel-release
+        # CentOS/RHEL系统处理
+        if [[ -f /etc/redhat-release ]]; then
+            CENTOS_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d. -f1)
+            if [[ $CENTOS_VERSION == "8" ]]; then
+                log_info "检测到CentOS 8，修复镜像源..."
+                # 备份原始repo文件
+                mkdir -p /etc/yum.repos.d/backup
+                cp /etc/yum.repos.d/*.repo /etc/yum.repos.d/backup/ 2>/dev/null || true
+                
+                # 使用阿里云镜像源
+                cat > /etc/yum.repos.d/CentOS-Base.repo << 'EOF'
+[base]
+name=CentOS-8 - Base - mirrors.aliyun.com
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos-vault/8.5.2111/BaseOS/x86_64/os/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+
+[updates]
+name=CentOS-8 - Updates - mirrors.aliyun.com
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos-vault/8.5.2111/AppStream/x86_64/os/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+
+[extras]
+name=CentOS-8 - Extras - mirrors.aliyun.com
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos-vault/8.5.2111/extras/x86_64/os/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+EOF
+                
+                # 清理缓存并更新
+                yum clean all
+                yum makecache
+            fi
+        fi
+        
+        yum update -y || log_warn "系统更新失败，继续安装..."
+        yum install -y curl wget unzip git epel-release || log_warn "部分包安装失败，继续安装..."
     fi
 }
 
