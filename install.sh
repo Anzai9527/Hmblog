@@ -137,8 +137,9 @@ install_php() {
     fi
     
     log_info "PHP安装完成"
-}#
- 创建数据库和用户
+}
+
+# 创建数据库和用户
 setup_database() {
     log_info "创建数据库和用户..."
     
