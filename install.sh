@@ -208,8 +208,9 @@ install_php() {
     esac
     
     log_info "PHP安装完成"
-}#
- 配置数据库
+}
+
+# 配置数据库
 setup_database() {
     log_info "配置数据库..."
     
@@ -380,7 +381,7 @@ init_database() {
     log_info "初始化数据库..."
     
     # 创建基础表结构
-    mysql -uhmblog -phmblog123456 hmblog << 'EOF' 2>/dev/null || mysql -uroot -proot123456 hmblog << 'EOF' || mysql -uroot hmblog << 'EOF'
+    mysql -uhmblog -phmblog123456 hmblog << 'EOF' 2>/dev/null || mysql -uroot -proot123456 hmblog << 'EOF2' 2>/dev/null || mysql -uroot hmblog << 'EOF3'
 CREATE TABLE IF NOT EXISTS users (
   id int(11) NOT NULL AUTO_INCREMENT,
   username varchar(50) NOT NULL,
